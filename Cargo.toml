@@ -1,0 +1,32 @@
+[package]
+name = "ledgerlog"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "A durable, segmented append-only commit log (a mini-Kafka) with a binary TCP protocol, consumer groups and crash recovery."
+license = "MIT"
+readme = "README.md"
+keywords = ["commit-log", "kafka", "storage", "streaming", "database"]
+categories = ["database-implementations", "network-programming"]
+
+[dependencies]
+anyhow = "1"
+bytes = "1"
+clap = { version = "4", features = ["derive"] }
+crc32fast = "1"
+parking_lot = "0.12"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "io-util", "sync", "time", "signal"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+proptest = "1"
+tempfile = "3"
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "ledgerlog"
+path = "src/main.rs"
