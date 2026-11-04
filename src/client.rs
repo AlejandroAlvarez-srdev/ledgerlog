@@ -258,6 +258,11 @@ impl Consumer {
         self.position
     }
 
+    /// Move the read position (e.g. after processing only part of a batch).
+    pub fn seek(&mut self, offset: u64) {
+        self.position = offset;
+    }
+
     /// Fetch the next records, long-polling up to `max_wait`. If the position
     /// fell behind retention, it is reset to the earliest available offset.
     pub async fn poll(&mut self) -> Result<Vec<Record>> {
