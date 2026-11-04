@@ -187,9 +187,25 @@ async fn serve(args: ServeArgs) -> Result<()> {
         ..ServerConfig::default()
     };
     let handle = server::spawn(broker, &args.addr, srv_cfg).await?;
-    tokio::signal::ctrl_c().await?;
+    shutdown_signal().await?;
     tracing::info!("shutting down");
     handle.shutdown().await?;
+    Ok(())
+}
+
+/// Resolve on Ctrl-C, or on SIGTERM on Unix (e.g. `kill`, systemd, Docker).
+async fn shutdown_signal() -> Result<()> {
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{signal, SignalKind};
+        let mut term = signal(SignalKind::terminate())?;
+        tokio::select! {
+            r = tokio::signal::ctrl_c() => r?,
+            _ = term.recv() => {}
+        }
+    }
+    #[cfg(not(unix))]
+    tokio::signal::ctrl_c().await?;
     Ok(())
 }
 
