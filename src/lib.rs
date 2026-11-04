@@ -14,15 +14,19 @@
 //!   protocol over TCP, a tokio server and an async client.
 
 pub mod broker;
+pub mod client;
 pub mod config;
 pub mod error;
 pub mod io;
 pub mod log;
 pub mod offsets;
+pub mod protocol;
 pub mod record;
 pub mod segment;
+pub mod server;
 
 pub use broker::{Broker, BrokerConfig};
+pub use client::{Client, Consumer, StartFrom};
 pub use config::{FsyncPolicy, LogConfig};
 pub use error::{Error, Result};
 pub use record::Record;
