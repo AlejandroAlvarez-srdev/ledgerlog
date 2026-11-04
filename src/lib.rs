@@ -13,13 +13,16 @@
 //! * [`protocol`], [`server`], [`client`] — a compact length-prefixed binary
 //!   protocol over TCP, a tokio server and an async client.
 
+pub mod broker;
 pub mod config;
 pub mod error;
 pub mod io;
 pub mod log;
+pub mod offsets;
 pub mod record;
 pub mod segment;
 
+pub use broker::{Broker, BrokerConfig};
 pub use config::{FsyncPolicy, LogConfig};
 pub use error::{Error, Result};
 pub use record::Record;
