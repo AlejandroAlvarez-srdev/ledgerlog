@@ -329,7 +329,12 @@ impl Broker {
     /// fsync partitions whose interval has elapsed (background flusher).
     pub fn sync_due(&self) -> Result<()> {
         for p in self.all_partitions() {
-            p.log.write().sync_if_due()?;
+            // Take the handle under the lock, fsync without it so producers
+            // are not blocked for the duration of the flush.
+            let handle = p.log.write().take_due_sync()?;
+            if let Some(file) = handle {
+                file.sync_data()?;
+            }
         }
         Ok(())
     }

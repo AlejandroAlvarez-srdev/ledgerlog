@@ -286,7 +286,10 @@ impl Log {
     fn maybe_sync(&mut self) -> Result<()> {
         match self.config.fsync {
             FsyncPolicy::Always => self.sync(),
-            FsyncPolicy::Interval(d) if self.last_sync.elapsed() >= d => self.sync(),
+            // Normally the server's background flusher syncs off the write
+            // path (see `take_due_sync`); this is only a safety net in case
+            // nobody is driving it.
+            FsyncPolicy::Interval(d) if self.last_sync.elapsed() >= d * 2 => self.sync(),
             _ => Ok(()),
         }
     }
@@ -301,14 +304,20 @@ impl Log {
         Ok(())
     }
 
-    /// Called periodically by the server for [`FsyncPolicy::Interval`].
-    pub fn sync_if_due(&mut self) -> Result<()> {
+    /// For [`FsyncPolicy::Interval`]: if a sync is due, mark the log clean
+    /// and return a duplicated handle of the active segment so the caller can
+    /// fsync it *after* releasing the partition lock. fsync applies to the
+    /// file, not the descriptor, so this covers every write made so far;
+    /// writes racing with it set `dirty` again and are synced next round.
+    pub fn take_due_sync(&mut self) -> Result<Option<File>> {
         if let FsyncPolicy::Interval(d) = self.config.fsync {
             if self.dirty && self.last_sync.elapsed() >= d {
-                self.sync()?;
+                self.dirty = false;
+                self.last_sync = Instant::now();
+                return Ok(Some(self.active().duplicate_log_handle()?));
             }
         }
-        Ok(())
+        Ok(None)
     }
 
     /// Read whole frames starting at `offset`, up to roughly `max_bytes`

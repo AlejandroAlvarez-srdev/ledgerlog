@@ -408,6 +408,11 @@ impl Segment {
         Ok(())
     }
 
+    /// A second handle to the log file (for syncing outside a lock).
+    pub fn duplicate_log_handle(&self) -> Result<File> {
+        Ok(self.log.try_clone()?)
+    }
+
     /// Sync both the log and the index (used when sealing a segment).
     pub fn sync_all(&self) -> Result<()> {
         self.log.sync_data()?;
