@@ -17,6 +17,7 @@ pub mod config;
 pub mod error;
 pub mod io;
 pub mod record;
+pub mod segment;
 
 pub use config::{FsyncPolicy, LogConfig};
 pub use error::{Error, Result};

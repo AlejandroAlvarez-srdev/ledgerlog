@@ -2,7 +2,7 @@
 name = "ledgerlog"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.82"
 description = "A durable, segmented append-only commit log (a mini-Kafka) with a binary TCP protocol, consumer groups and crash recovery."
 license = "MIT"
 readme = "README.md"
